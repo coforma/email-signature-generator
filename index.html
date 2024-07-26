@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Signature Generator</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --form-background: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+            background-color: var(--form-background);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .form-container, .preview-container {
+            flex: 1;
+            padding: 30px;
+        }
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        input[type="text"], input[type="email"], input[type="tel"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        #signature {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Email Signature Generator</h1>
+    <div class="container">
+        <div class="form-container">
+            <h2>Your Information</h2>
+            <form id="signatureForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required placeholder="Your Name">
+                
+                <label for="pronouns">Pronouns:</label>
+                <input type="text" id="pronouns" placeholder="Your Pronouns">
+                
+                <label for="title">Title:</label>
+                <input type="text" id="title" placeholder="Your Title">
+                
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" placeholder="Your Phone Number">
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" required placeholder="Your Email">
+                
+                <label for="medium">Medium Link:</label>
+                <select id="medium"></select>
+                
+                <div class="checkbox-container">
+                    <input type="checkbox" id="banner">
+                    <label for="banner">Include 2024 Best Places To Work Banner</label>
+                </div>
+            </form>
+        </div>
+        <div class="preview-container">
+            <h2>Signature Preview</h2>
+            <div id="signature"></div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const signature = document.getElementById('signature');
+            const medium = document.getElementById('medium');
+            const links = [
+                {title:'Read our Collectively newsletter on LinkedIn', href:'https://www.linkedin.com/newsletters/collectively-7019363458403995648/'},
+                {title:'Read about the work we\'ve done', href:'https://coforma.io/case-studies/'},
+                {title:'Learn more about our services', href:'https://coforma.io/services/'}
+            ];
+
+            links.forEach((link, i) => {
+                medium.innerHTML += `<option value="${i}">${link.title}</option>`;
+            });
+
+            const getValue = (id, empty) => {
+                let field = document.getElementById(id);
+                if (field.value) {
+                    return field.value;
+                } else if (!empty) {
+                    return field.placeholder;
+                }
+                return false;
+            }
+
+            const getPhone = () => {
+                var val = getValue('phone').replace(/[^0-9]/gim, '').substr(0, 10).replace(/(\d{3})(\d{3})(\d{4})/, '$1.$2.$3');
+                document.getElementById('phone').value = val;
+                return val;
+            }
+
+            const getEmail = () => {
+                return getValue('email').replace(/@.*/gim, '');
+            }
+
+            const getLink = (field) => {
+                return links[getValue('medium')][field];
+            }
+
+            const getBanner = () => {
+                if (!document.getElementById("banner").checked) {
+                    return "";
+                }
+                return `<a href="https://coforma.io/?utm_source=signature&utm_medium=email&utm_campaign=best_place_to_work_2024"><img width="300px" max-width="300px" style="width: 300px; min-width: 300px; max-width: 300px;" src="images/2024BPTW_WinnerEmailSignature.png" /></a>`;
+            }
+
+            const makeSignature = () => {
+                return `
+                <p style="color: #595959; font-family: Roboto, Trebuchet MS, sans-serif; font-size: small; letter-spacing: 0.01em; margin: 10px 0 0 0; line-height: 1.35;">
+                <strong style="color: #2c2c2c;">${getValue('name')}</strong>
+                &nbsp;${getValue('pronouns')}<br />
+                ${getValue('title')}<br />
+                M ${getPhone()} &nbsp; <a style="color: #595959;" href="mailto:${getEmail()}@coforma.io">${getEmail()}@coforma.io</a>
+                <br /><br /><a href="https://coforma.io/"><img width="116" style="width: 116px; min-width: 116px; max-width: 116px; border-radius: 1px;" src="https://coforma.io/media/images/coforma_navy.original.jpg" width="116" /></a><br /><a style="color: #2572e4; line-height: 2; margin-top: 2px; display: inline-block;" href="${getLink('href')}">${getLink('title')}</a><br />
+                ${getBanner()}<br /></p>
+                `;
+            }
+
+            let delay = null;
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', function() {
+                    clearTimeout(delay);
+                    delay = setTimeout(() => {
+                        signature.innerHTML = makeSignature();
+                    }, 250);
+                });
+            });
+
+            signature.innerHTML = makeSignature();
+        })();
+    </script>
+</body>
+</html>
