@@ -317,13 +317,33 @@
           // Empty selection (placeholder chosen) means no link in the signature
           const link = Number.isNaN(selectedIndex) ? null : (links[selectedIndex] ?? null);
 
+          // Inline styles are required — email clients strip <style> blocks
           return `
-            <p style="color: #595959; font-family: Roboto, Trebuchet MS, sans-serif; font-size: small; letter-spacing: 0.01em; margin: 10px 0 0 0; line-height: 1.35;">
-            <strong style="color: #2c2c2c;">${getValue("name")}</strong>
-            ${pronouns ? `&nbsp;${pronouns}` : ""}<br />
-            ${getValue("title")}<br />
-            ${phone ? `M ${phone} &nbsp; ` : ""}<a style="color: #595959;" href="mailto:${email}@coforma.io">${email}@coforma.io</a>
-            <br /><br /><a href="https://coforma.io/"><img width="116" style="width: 116px; min-width: 116px; max-width: 116px; border-radius: 1px;" src="https://coforma.io/media/images/coforma_navy.original.jpg" alt="Coforma" /></a>${link ? `<br /><a style="color: #2572e4; line-height: 2; margin-top: 2px; display: inline-block;" href="${link.href}">${link.title}</a>` : ""}</p>
+            <p style="
+              color: #595959;
+              font-family: Roboto, Trebuchet MS, sans-serif;
+              font-size: small;
+              letter-spacing: 0.01em;
+              margin: 10px 0 0 0;
+              line-height: 1.35;
+            ">
+              <strong style="color: #2c2c2c;">${getValue("name")}</strong>${pronouns ? `&nbsp;${pronouns}` : ""}<br />
+              ${getValue("title")}<br />
+              ${phone ? `M ${phone} &nbsp; ` : ""}<a style="color: #595959;" href="mailto:${email}@coforma.io">${email}@coforma.io</a>
+              <br /><br />
+              <a href="https://coforma.io/">
+                <img
+                  src="https://coforma.io/media/images/coforma_navy.original.jpg"
+                  alt="Coforma"
+                  width="116"
+                  style="width: 116px; min-width: 116px; max-width: 116px; border-radius: 1px;"
+                />
+              </a>
+              ${link ? `
+              <br />
+              <a style="color: #2572e4; line-height: 2; margin-top: 2px; display: inline-block;" href="${link.href}">${link.title}</a>
+              ` : ""}
+            </p>
           `;
         };
 
