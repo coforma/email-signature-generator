@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Signature Generator</title>
+    <!-- S-5: Load declared custom fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans&family=Work+Sans:wght@700&family=Signika:wght@600&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --primary-color: #2572e4;
@@ -20,9 +27,19 @@
         margin: 0;
         padding: 20px;
       }
-      .container {
+      /* m-7: wrap page title + card together in a single landmark */
+      .page-wrapper {
         max-width: 1200px;
         margin: 0 auto;
+      }
+      h1 {
+        font-family: "Work Sans", sans-serif;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .container {
         display: flex;
         gap: 30px;
         background-color: var(--form-background);
@@ -35,13 +52,6 @@
         flex: 1;
         padding: 30px;
       }
-      h1 {
-        font-family: "Work Sans", sans-serif;
-        font-weight: 700;
-        color: var(--primary-color);
-        text-align: center;
-        margin-bottom: 30px;
-      }
       h2 {
         font-family: "Signika", sans-serif;
         font-weight: 600;
@@ -49,6 +59,24 @@
         border-bottom: 2px solid var(--primary-color);
         padding-bottom: 10px;
         margin-top: 0;
+      }
+      /* M-4: remove default fieldset chrome */
+      fieldset {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      /* M-5 / m-6: visually hidden utility for screen-reader-only content */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
       form {
         display: grid;
@@ -62,6 +90,7 @@
       input[type="email"],
       input[type="tel"],
       select {
+        box-sizing: border-box;
         width: 100%;
         padding: 10px;
         border: 1px solid #ddd;
@@ -69,6 +98,7 @@
         font-size: 16px;
         transition: border-color 0.3s;
       }
+      /* C-1: suppress default outline only; :focus-visible provides the real indicator */
       input[type="text"]:focus,
       input[type="email"]:focus,
       input[type="tel"]:focus,
@@ -76,14 +106,45 @@
         border-color: var(--primary-color);
         outline: none;
       }
-      .checkbox-container {
+      input[type="text"]:focus-visible,
+      input[type="email"]:focus-visible,
+      input[type="tel"]:focus-visible,
+      select:focus-visible,
+      #copy-btn:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
+      .preview-header {
         display: flex;
         align-items: center;
-        gap: 10px;
+        justify-content: space-between;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 10px;
+        margin-top: 0;
       }
-      input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
+      .preview-header h2 {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin: 0;
+      }
+      #copy-btn {
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 6px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+      #copy-btn:hover {
+        opacity: 0.85;
+      }
+      #copy-btn.copied {
+        background-color: #2a9d5c;
+      }
+      #copy-btn.error {
+        background-color: #c0392b;
       }
       #signature {
         background-color: #fff;
@@ -98,41 +159,95 @@
           flex-direction: column;
         }
       }
+      /* S-3: respect user motion preferences */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>Email Signature Generator</h1>
-    <div class="container">
-      <div class="form-container">
-        <h2>Your Information</h2>
-        <form id="signatureForm">
-          <label for="name">Name:</label>
-          <input type="text" id="name" required placeholder="Your Name" />
+    <!-- m-7: h1 and .container share a .page-wrapper landmark -->
+    <div class="page-wrapper">
+      <h1>Email Signature Generator</h1>
+      <div class="container">
+        <div class="form-container">
+          <h2>Your Information</h2>
+          <!-- M-4: fieldset + visually-hidden legend groups fields for screen readers -->
+          <!-- S-2: prevent Enter-key page reload via JS submit handler -->
+          <form id="signatureForm">
+            <fieldset>
+              <legend class="visually-hidden">Signature information</legend>
 
-          <label for="pronouns">Pronouns:</label>
-          <input type="text" id="pronouns" placeholder="Your Pronouns" />
+              <label for="name">Name:</label>
+              <!-- S-1: autocomplete attributes for WCAG 1.3.5 -->
+              <input
+                type="text"
+                id="name"
+                required
+                placeholder="Your Name"
+                autocomplete="name"
+              />
 
-          <label for="title">Title:</label>
-          <input type="text" id="title" placeholder="Your Title" />
+              <label for="pronouns">Pronouns:</label>
+              <input
+                type="text"
+                id="pronouns"
+                placeholder="Your Pronouns"
+                autocomplete="off"
+              />
 
-          <label for="phone">Phone:</label>
-          <input type="tel" id="phone" placeholder="Your Phone Number" />
+              <label for="title">Title:</label>
+              <input
+                type="text"
+                id="title"
+                placeholder="Your Title"
+                autocomplete="organization-title"
+              />
 
-          <label for="email">Email:</label>
-          <input type="email" id="email" required placeholder="Your Email" />
+              <label for="phone">Phone:</label>
+              <input
+                type="tel"
+                id="phone"
+                placeholder="Your Phone Number"
+                autocomplete="tel"
+              />
 
-          <label for="medium">Medium Link:</label>
-          <select id="medium"></select>
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                required
+                placeholder="yourname@coforma.io"
+                autocomplete="email"
+              />
 
-          <div class="checkbox-container">
-            <input type="checkbox" id="banner" />
-            <label for="banner">Include 2024 Best Places To Work Banner</label>
+              <label for="medium">Medium Link:</label>
+              <select id="medium"></select>
+            </fieldset>
+          </form>
+        </div>
+        <div class="preview-container">
+          <div class="preview-header">
+            <h2>Signature Preview</h2>
+            <!-- M-5: aria-describedby links button to live status region -->
+            <button id="copy-btn" type="button" aria-describedby="copy-status">
+              Copy
+            </button>
+            <!-- M-5: screen-reader-only live region announces copy result -->
+            <span id="copy-status" aria-live="polite" class="visually-hidden"></span>
           </div>
-        </form>
-      </div>
-      <div class="preview-container">
-        <h2>Signature Preview</h2>
-        <div id="signature"></div>
+          <!-- m-6 / M-4: landmark region + live updates announced to screen readers -->
+          <div
+            id="signature"
+            role="region"
+            aria-label="Signature preview"
+            aria-live="polite"
+          ></div>
+        </div>
       </div>
     </div>
 
@@ -140,6 +255,9 @@
       (function () {
         const signature = document.getElementById("signature");
         const medium = document.getElementById("medium");
+        const copyBtn = document.getElementById("copy-btn");
+        const copyStatus = document.getElementById("copy-status");
+
         const links = [
           {
             title: "Sign up for our Collectively newsletter",
@@ -155,63 +273,105 @@
           }
         ];
 
+        // Build select options via DocumentFragment — avoids repeated innerHTML re-parsing
+        const fragment = document.createDocumentFragment();
+        // Leading "no link" option — default state; omits the link line from the signature
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "— No link —";
+        fragment.appendChild(placeholder);
         links.forEach((link, i) => {
-          medium.innerHTML += `<option value="${i}">${link.title}</option>`;
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = link.title;
+          fragment.appendChild(opt);
         });
+        medium.appendChild(fragment);
 
-        const getValue = (id, empty) => {
-          let field = document.getElementById(id);
-          if (field.value) {
-            return field.value;
-          } else if (!empty) {
-            return field.placeholder;
-          }
-          return false;
+        // m-4: `strict: true` returns false instead of placeholder when field is empty
+        const getValue = (id, { strict = false } = {}) => {
+          const field = document.getElementById(id);
+          if (field.value) return field.value;
+          return strict ? false : field.placeholder;
         };
 
-        const getPhone = () => {
-          var val = getValue("phone")
-            .replace(/[^0-9]/gim, "")
-            .substr(0, 10)
+        // m-2: /\D/g is idiomatic for "remove non-digits"; m-1: slice() replaces deprecated substr()
+        const formatPhone = (raw) => {
+          return raw
+            .replace(/\D/g, "")
+            .slice(0, 10)
             .replace(/(\d{3})(\d{3})(\d{4})/, "$1.$2.$3");
-          document.getElementById("phone").value = val;
-          return val;
         };
 
-        const getEmail = () => {
-          return getValue("email").replace(/@.*/gim, "");
-        };
+        const getPhone = () => formatPhone(getValue("phone"));
 
-        const getLink = (field) => {
-          return links[getValue("medium")][field];
-        };
-
-        const getBanner = () => {
-          if (!document.getElementById("banner").checked) {
-            return "";
-          }
-          return `<a href="https://coforma.io/?utm_source=signature&utm_medium=email&utm_campaign=best_place_to_work_2024"><img width="300px" max-width="300px" style="width: 300px; min-width: 300px; max-width: 300px;" src="images/2024BPTW_WinnerEmailSignature.png" /></a>`;
-        };
+        // Strip domain — only the local part is used; @coforma.io is hardcoded in the template
+        const getEmail = () => getValue("email").replace(/@.*/, "");
 
         const makeSignature = () => {
+          // Compute all values once to avoid redundant DOM reads
+          const pronouns = getValue("pronouns", { strict: true });
+          const phone = getPhone();
+          const email = getEmail();
+          const selectedIndex = parseInt(getValue("medium"), 10);
+          // Empty selection (placeholder chosen) means no link in the signature
+          const link = Number.isNaN(selectedIndex) ? null : (links[selectedIndex] ?? null);
+
           return `
-                <p style="color: #595959; font-family: Roboto, Trebuchet MS, sans-serif; font-size: small; letter-spacing: 0.01em; margin: 10px 0 0 0; line-height: 1.35;">
-                <strong style="color: #2c2c2c;">${getValue("name")}</strong>
-                &nbsp;${getValue("pronouns")}<br />
-                ${getValue("title")}<br />
-                M ${getPhone()} &nbsp; <a style="color: #595959;" href="mailto:${getEmail()}@coforma.io">${getEmail()}@coforma.io</a>
-                <br /><br /><a href="https://coforma.io/"><img width="116" style="width: 116px; min-width: 116px; max-width: 116px; border-radius: 1px;" src="https://coforma.io/media/images/coforma_navy.original.jpg" width="116" /></a><br /><a style="color: #2572e4; line-height: 2; margin-top: 2px; display: inline-block;" href="${getLink("href")}">${getLink("title")}</a><br />
-                ${getBanner()}<br /></p>
-                `;
+            <p style="color: #595959; font-family: Roboto, Trebuchet MS, sans-serif; font-size: small; letter-spacing: 0.01em; margin: 10px 0 0 0; line-height: 1.35;">
+            <strong style="color: #2c2c2c;">${getValue("name")}</strong>
+            ${pronouns ? `&nbsp;${pronouns}` : ""}<br />
+            ${getValue("title")}<br />
+            ${phone ? `M ${phone} &nbsp; ` : ""}<a style="color: #595959;" href="mailto:${email}@coforma.io">${email}@coforma.io</a>
+            <br /><br /><a href="https://coforma.io/"><img width="116" style="width: 116px; min-width: 116px; max-width: 116px; border-radius: 1px;" src="https://coforma.io/media/images/coforma_navy.original.jpg" alt="Coforma" /></a>${link ? `<br /><a style="color: #2572e4; line-height: 2; margin-top: 2px; display: inline-block;" href="${link.href}">${link.title}</a>` : ""}</p>
+          `;
         };
 
-        let delay = null;
+        // S-2: prevent Enter key from submitting the form and reloading the page
+        document.getElementById("signatureForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+        });
+
+        // m-3: debounceTimer holds the setTimeout ID; shared across all inputs so any
+        // field change resets the timer and only one signature rebuild fires per burst.
+        let debounceTimer = null;
         document.querySelectorAll("input, select").forEach((el) => {
-          el.addEventListener("input", function () {
-            clearTimeout(delay);
-            delay = setTimeout(() => {
+          el.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            if (el.id === "phone") {
+              el.value = formatPhone(el.value);
+            }
+            debounceTimer = setTimeout(() => {
               signature.innerHTML = makeSignature();
             }, 250);
+          });
+        });
+
+        // C-2: handle clipboard errors with visible feedback
+        copyBtn.addEventListener("click", () => {
+          const html = signature.innerHTML;
+          const blob = new Blob([html], { type: "text/html" });
+          const item = new ClipboardItem({ "text/html": blob });
+
+          navigator.clipboard.write([item]).then(() => {
+            copyBtn.textContent = "Copied!";
+            copyBtn.classList.add("copied");
+            // M-5: announce success to screen readers via live region
+            copyStatus.textContent = "Signature copied to clipboard.";
+            setTimeout(() => {
+              copyBtn.textContent = "Copy";
+              copyBtn.classList.remove("copied");
+              copyStatus.textContent = "";
+            }, 2000);
+          }).catch(() => {
+            copyBtn.textContent = "Failed — copy manually";
+            copyBtn.classList.add("error");
+            copyStatus.textContent = "Copy failed. Please select and copy the signature manually.";
+            setTimeout(() => {
+              copyBtn.textContent = "Copy";
+              copyBtn.classList.remove("error");
+              copyStatus.textContent = "";
+            }, 3000);
           });
         });
 
